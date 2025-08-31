@@ -2,6 +2,7 @@
 Flask==2.3.3
 Flask-SocketIO==5.3.6
 Flask-Login==0.6.2
+Flask-CORS==4.0.0
 python-socketio==5.8.0
 Werkzeug==2.3.7
 cryptography==39.0.2
