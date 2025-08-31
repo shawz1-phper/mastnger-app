@@ -13,11 +13,7 @@ import secrets
 from functools import wraps
 from dotenv import load_dotenv
 import logging
-try:
-    import eventlet
-    print("Eventlet imported successfully")
-except ImportError as e:
-    print(f"Eventlet import error: {e}")
+
 # تحميل متغيرات البيئة
 load_dotenv()
 
@@ -25,8 +21,8 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-'+secrets.token_hex(16))
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-app.config['SOCKETIO_ASYNC_MODE'] = 'gevent'
-socketio = SocketIO(app, async_mode='gevent')
+# فقط هذا السطر بدون async_mode
+socketio = SocketIO(app, cors_allowed_origins="*")
 # إضافة فلاتر Jinja2 المخصصة
 @app.template_filter('time_ago')
 def time_ago_filter(datetime_str):
