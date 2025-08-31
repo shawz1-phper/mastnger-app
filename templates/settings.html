@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}الإعدادات{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">الإعدادات</h6>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                {% if success %}
+                <div class="alert alert-success" role="alert">
+                    تم حفظ الإعدادات بنجاح
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('settings') }}">
+                    <div class="mb-4">
+                        <h6 class="font-weight-bold mb-3">المظهر</h6>
+                        
+                        <div class="theme-selector">
+                            <div class="theme-option theme-light active" data-theme="light" title="فاتح"></div>
+                            <div class="theme-option theme-dark" data-theme="dark" title="مظلم"></div>
+                            <div class="theme-option theme-blue" data-theme="blue" title="أزرق"></div>
+                            <div class="theme-option theme-green" data-theme="green" title="أخضر"></div>
+                            <div class="theme-option theme-purple" data-theme="purple" title="أرجواني"></div>
+                        </div>
+                        
+                        <input type="hidden" id="theme" name="theme" value="{{ user.theme }}">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="font-weight-bold mb-3">الإشعارات</h6>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="notifications" name="notifications" 
+                                   {% if user.notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="notifications">
+                                تفعيل الإشعارات
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="sound" name="sound"
+                                   {% if user.sound %}checked{% endif %}>
+                            <label class="form-check-label" for="sound">
+                                تشغيل صوت الإشعارات
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications"
+                                   {% if user.email_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="email_notifications">
+                                الإشعارات عبر البريد الإلكتروني
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="font-weight-bold mb-3">خصوصية</h6>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="online_status" name="online_status"
+                                   {% if user.online_status %}checked{% endif %}>
+                            <label class="form-check-label" for="online_status">
+                                إظهار حالة الاتصال
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="read_receipts" name="read_receipts"
+                                   {% if user.read_receipts %}checked{% endif %}>
+                            <label class="form-check-label" for="read_receipts">
+                                إشعارات القراءة
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="profile_visibility" name="profile_visibility"
+                                   {% if user.profile_visibility %}checked{% endif %}>
+                            <label class="form-check-label" for="profile_visibility">
+                                جعل الملف الشخصي مرئياً للجميع
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="font-weight-bold mb-3">الأمان</h6>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="two_factor" name="two_factor"
+                                   {% if user.two_factor %}checked{% endif %}>
+                            <label class="form-check-label" for="two_factor">
+                                المصادقة الثنائية
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="login_alerts" name="login_alerts"
+                                   {% if user.login_alerts %}checked{% endif %}>
+                            <label class="form-check-label" for="login_alerts">
+                                تنبيهات تسجيل الدخول
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">حفظ الإعدادات</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // إدارة اختيار السمة
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const theme = this.getAttribute('data-theme');
+                document.getElementById('theme').value = theme;
+                
+                // تحديث المظهر الفوري
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                // تحديث الأزرار النشطة
+                document.querySelectorAll('.theme-option').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // تعيين السمة الحالية كنشطة
+        const currentTheme = document.getElementById('theme').value;
+        document.querySelector(`.theme-option[data-theme="${currentTheme}"]`).classList.add('active');
+    });
+</script>
+{% endblock %}

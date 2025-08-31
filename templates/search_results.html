@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}نتائج البحث عن "{{ query }}"{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>نتائج البحث عن "{{ query }}"</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-right me-1"></i> العودة
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-3">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">تصفية النتائج</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">النوع</label>
+                    <div class="form-check">
+                        <input class="form-check-input search-filter" type="checkbox" name="type" value="user" id="filter-user" checked>
+                        <label class="form-check-label" for="filter-user">المستخدمون</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input search-filter" type="checkbox" name="type" value="room" id="filter-room" checked>
+                        <label class="form-check-label" for="filter-room">الغرف</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input search-filter" type="checkbox" name="type" value="message" id="filter-message" checked>
+                        <label class="form-check-label" for="filter-message">الرسائل</label>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary w-100" onclick="performFilteredSearch()">تطبيق التصفية</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">عمليات البحث الحديثة</h6>
+            </div>
+            <div class="card-body" id="recent-searches">
+                <!-- سيتم ملؤها بواسطة JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-9">
+        <div id="search-results">
+            {% if results %}
+                {% for result in results %}
+                <div class="search-result card card-hover mb-3" data-type="{{ result.type }}" 
+                     data-id="{{ result.id }}" {% if result.type == 'message' %}data-room="{{ result.room }}"{% endif %}>
+                    {% if result.type == 'user' %}
+                    <div class="card-body d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='img/avatars/' + result.avatar) }}" class="user-avatar me-3" alt="{{ result.name }}">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">{{ result.name }}</h5>
+                            <p class="card-text text-muted mb-0">مستخدم</p>
+                        </div>
+                        <button class="btn btn-primary btn-sm">عرض الملف</button>
+                    </div>
+                    {% elif result.type == 'room' %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ result.name }}</h5>
+                        <p class="card-text">{{ result.description }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">غرفة دردشة</small>
+                            <button class="btn btn-primary btn-sm">انضم إلى الغرفة</button>
+                        </div>
+                    </div>
+                    {% elif result.type == 'message' %}
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-subtitle mb-0">{{ result.username }}</h6>
+                            <small class="text-muted">{{ result.timestamp|time_ago }}</small>
+                        </div>
+                        <p class="card-text">{{ result.message }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">في غرفة: {{ result.room }}</small>
+                            <button class="btn btn-outline-primary btn-sm">عرض المحادثة</button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">لم يتم العثور على نتائج</h4>
+                    <p class="text-muted">لم نعثر على أي نتائج تطابق "{{ query }}"</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تحميل عمليات البحث الحديثة
+        loadRecentSearches();
+        
+        // إضافة مستمعي الأحداث لنتائج البحث
+        document.querySelectorAll('.search-result').forEach(result => {
+            result.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                const id = this.getAttribute('data-id');
+                
+                if (type === 'user') {
+                    window.location.href = '/private/' + id;
+                } else if (type === 'room') {
+                    window.location.href = '/chat/' + id;
+                } else if (type === 'message') {
+                    const room = this.getAttribute('data-room');
+                    window.location.href = '/chat/' + room;
+                }
+            });
+        });
+        
+        // حفظ البحث الحالي
+        saveRecentSearch('{{ query }}', 'all');
+    });
+</script>
+{% endblock %}

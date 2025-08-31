@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}إنشاء حساب{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-5 col-lg-6 col-md-8">
+        <div class="card shadow-lg border-0 rounded-lg mt-5">
+            <div class="card-header bg-success text-white">
+                <h3 class="text-center font-weight-light my-4">إنشاء حساب</h3>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="inputUsername" type="text" name="username" placeholder="اسم المستخدم" required />
+                        <label for="inputUsername">اسم المستخدم</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="inputEmail" type="email" name="email" placeholder="name@example.com" required />
+                        <label for="inputEmail">البريد الإلكتروني</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="inputPassword" type="password" name="password" placeholder="كلمة المرور" required />
+                        <label for="inputPassword">كلمة المرور</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="inputConfirmPassword" type="password" name="confirm_password" placeholder="تأكيد كلمة المرور" required />
+                        <label for="inputConfirmPassword">تأكيد كلمة المرور</label>
+                    </div>
+                    <div class="mt-4 mb-0">
+                        <button type="submit" class="btn btn-success w-100">إنشاء حساب</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center py-3">
+                <div class="small"><a href="{{ url_for('login') }}">لديك حساب بالفعل؟ سجل الدخول هنا</a></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+<div class="row">
+    <!-- القائمة الجانبية -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-comments me-2"></i>
+                الغرف المتاحة
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for room_name, room_data in rooms.items() %}
+                    <a href="{{ url_for('chat_room', room_name=room_name) }}" 
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        {{ room_name }}
+                        <span class="badge bg-primary rounded-pill">{{ room_data.participants|length if room_data.participants }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                    <i class="fas fa-plus me-1"></i>
+                    إنشاء غرفة جديدة
+                </button>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <i class="fas fa-users me-2"></i>
+                الأصدقاء
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for user_id, user_data in users.items() %}
+                        {% if user_id != current_user.id %}
+                        <a href="{{ url_for('private_chat', user_id=user_id) }}" 
+                           class="list-group-item list-group-item-action d-flex align-items-center">
+                            <img src="{{ url_for('static', filename='img/avatars/' + user_data.avatar) }}" 
+                                 class="user-avatar me-2" alt="{{ user_data.username }}">
+                            {{ user_data.username }}
+                            {% if private_last_messages[user_id] %}
+                            <span class="badge bg-info ms-auto">{{ private_last_messages[user_id].timestamp|time_ago }}</span>
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="col-md-9">
+        <div class="row">
+            <!-- إحصائيات سريعة -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col me-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    الغرف النشطة
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rooms|length }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-comments fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col me-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    المستخدمون
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ users|length }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الغرف النشطة -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-history me-2"></i>
+                آخر النشاط
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for room_name, last_message in room_last_messages.items() %}
+                    <a href="{{ url_for('chat_room', room_name=room_name) }}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ room_name }}</h5>
+                            <small>{{ last_message.timestamp|time_ago }}</small>
+                        </div>
+                        <p class="mb-1">{{ last_message.message }}</p>
+                        <small>بواسطة {{ last_message.username }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal إنشاء غرفة -->
+<div class="modal fade" id="createRoomModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إنشاء غرفة دردشة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('chat_room', room_name='NEW_ROOM') }}" method="GET" id="createRoomForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="roomName" class="form-label">اسم الغرفة</label>
+                        <input type="text" class="form-control" id="roomName" name="room_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roomDescription" class="form-label">وصف الغرفة (اختياري)</label>
+                        <textarea class="form-control" id="roomDescription" name="room_description" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">إنشاء الغرفة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('createRoomForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const roomName = document.getElementById('roomName').value;
+        if (roomName) {
+            window.location.href = "{{ url_for('chat_room', room_name='') }}" + encodeURIComponent(roomName);
+        }
+    });
+</script>
+{% endblock %}
