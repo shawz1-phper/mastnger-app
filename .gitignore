@@ -1,0 +1,35 @@
+# بيئات افتراضية
+venv/
+env/
+.venv/
+
+# ملفات البيئة
+.env
+.env.local
+.env.production
+
+# بيانات التطبيق (يمكن إضافة بيانات الاختبار لاحقاً)
+/data/
+!data/.gitkeep
+
+# بايثون
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# نظام التشغيل
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# الملفات المؤقتة
+temp/
+tmp/
