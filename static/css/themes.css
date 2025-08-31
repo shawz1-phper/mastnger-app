@@ -1,0 +1,176 @@
+/* themes.css - أنماط السمات الإضافية */
+
+/* سمة فاتحة إضافية */
+.light-theme {
+    --primary-color: #4e73df;
+    --secondary-color: #6f42c1;
+    --success-color: #1cc88a;
+    --info-color: #36b9cc;
+    --warning-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --light-color: #f8f9fc;
+    --dark-color: #5a5c69;
+    --bg-color: #f8f9fc;
+    --text-color: #5a5c69;
+    --border-color: #e3e6f0;
+    --card-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    --input-bg: #ffffff;
+    --input-border: #d1d3e2;
+    --modal-bg: #ffffff;
+}
+
+/* سمة مظلمة إضافية */
+.dark-theme {
+    --primary-color: #4e73df;
+    --secondary-color: #6f42c1;
+    --success-color: #1cc88a;
+    --info-color: #36b9cc;
+    --warning-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --light-color: #5a5c69;
+    --dark-color: #f8f9fc;
+    --bg-color: #2e3440;
+    --text-color: #d8dee9;
+    --border-color: #4c566a;
+    --card-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.3);
+    --input-bg: #3b4252;
+    --input-border: #4c566a;
+    --modal-bg: #3b4252;
+}
+
+/* سمة زرقاء */
+.blue-theme {
+    --primary-color: #2D9CDB;
+    --secondary-color: #2F80ED;
+    --success-color: #27AE60;
+    --info-color: #56CCF2;
+    --warning-color: #F2C94C;
+    --danger-color: #EB5757;
+    --light-color: #F2F2F2;
+    --dark-color: #333333;
+    --bg-color: #E5E5E5;
+    --text-color: #4F4F4F;
+    --border-color: #BDBDBD;
+    --card-shadow: 0 0.15rem 1.75rem 0 rgba(47, 128, 237, 0.15);
+    --input-bg: #ffffff;
+    --input-border: #BDBDBD;
+    --modal-bg: #ffffff;
+}
+
+/* سمة خضراء */
+.green-theme {
+    --primary-color: #219653;
+    --secondary-color: #6FCF97;
+    --success-color: #27AE60;
+    --info-color: #22A5AD;
+    --warning-color: #F2C94C;
+    --danger-color: #EB5757;
+    --light-color: #F2F2F2;
+    --dark-color: #333333;
+    --bg-color: #E5F5E8;
+    --text-color: #2D3739;
+    --border-color: #B8DBC2;
+    --card-shadow: 0 0.15rem 1.75rem 0 rgba(33, 150, 83, 0.15);
+    --input-bg: #ffffff;
+    --input-border: #B8DBC2;
+    --modal-bg: #ffffff;
+}
+
+/* سمة أرجوانية */
+.purple-theme {
+    --primary-color: #9B51E0;
+    --secondary-color: #BB6BD9;
+    --success-color: #27AE60;
+    --info-color: #56CCF2;
+    --warning-color: #F2C94C;
+    --danger-color: #EB5757;
+    --light-color: #F8F9FC;
+    --dark-color: #231F20;
+    --bg-color: #F9F0FF;
+    --text-color: #4F4F4F;
+    --border-color: #E5D6F7;
+    --card-shadow: 0 0.15rem 1.75rem 0 rgba(155, 81, 224, 0.15);
+    --input-bg: #ffffff;
+    --input-border: #E5D6F7;
+    --modal-bg: #ffffff;
+}
+
+/* تطبيق السمات على العناصر */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.card {
+    background-color: var(--light-color);
+    border-color: var(--border-color);
+    box-shadow: var(--card-shadow);
+}
+
+.form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.form-control:focus {
+    background-color: var(--input-bg);
+    border-color: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.modal-content {
+    background-color: var(--modal-bg);
+    color: var(--text-color);
+}
+
+.list-group-item {
+    background-color: var(--light-color);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+/* أزرار السمات في صفحة الإعدادات */
+.theme-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.theme-option {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.theme-option:hover {
+    transform: scale(1.1);
+}
+
+.theme-option.active {
+    border-color: var(--primary-color);
+}
+
+.theme-light {
+    background: linear-gradient(135deg, #f8f9fc 0%, #e3e6f0 100%);
+}
+
+.theme-dark {
+    background: linear-gradient(135deg, #2e3440 0%, #4c566a 100%);
+}
+
+.theme-blue {
+    background: linear-gradient(135deg, #2D9CDB 0%, #2F80ED 100%);
+}
+
+.theme-green {
+    background: linear-gradient(135deg, #219653 0%, #6FCF97 100%);
+}
+
+.theme-purple {
+    background: linear-gradient(135deg, #9B51E0 0%, #BB6BD9 100%);
+}
