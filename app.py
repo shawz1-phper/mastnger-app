@@ -21,8 +21,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-'+secrets.token_hex(16))
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-# فقط هذا السطر بدون async_mode
-socketio = SocketIO(app, cors_allowed_origins="*")
+app.config['SOCKETIO_ASYNC_MODE'] = 'threading'  # الخيار الأفضل
 # إضافة فلاتر Jinja2 المخصصة
 @app.template_filter('time_ago')
 def time_ago_filter(datetime_str):
