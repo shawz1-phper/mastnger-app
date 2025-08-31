@@ -1,11 +1,10 @@
 Flask==2.3.3
 Flask-SocketIO==5.3.6
 Flask-Login==0.6.2
-Flask-CORS==4.0.0
 python-socketio==5.8.0
-gevent==23.9.1
-greenlet==3.0.3
-python-dotenv==1.0.0
+gevent==22.10.2  # ← إصدار مستقر
+greenlet==2.0.2  # ← إصدار متوافق
 Werkzeug==2.3.7
-cryptography==41.0.3
+cryptography==39.0.2
 gunicorn==21.2.0
+python-dotenv==1.0.0
