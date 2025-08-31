@@ -8,7 +8,7 @@ class Config:
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    SOCKETIO_ASYNC_MODE = 'eventlet'
+    SOCKETIO_ASYNC_MODE = 'threading'
     
     # إعدادات قاعدة البيانات (للمستقبل)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
