@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}MASTNGER - منصة الدردشة الفورية الآمنة{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- الشعار والعنوان -->
+            <div class="mb-5">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="MASTNGER Logo" class="mb-4" style="height: 100px;">
+                <h1 class="display-4 fw-bold text-primary">MASTNGER</h1>
+                <p class="lead text-muted">منصة الدردشة الفورية الآمنة والمشفرة بالكامل</p>
+            </div>
+
+            <!-- ميزات التطبيق -->
+            <div class="row mb-5">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="text-primary mb-3">
+                                <i class="fas fa-lock fa-3x"></i>
+                            </div>
+                            <h5 class="card-title">تشفير كامل</h5>
+                            <p class="card-text">جميع رسائلك مشفرة من الطرف إلى الطرف</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="text-primary mb-3">
+                                <i class="fas fa-bolt fa-3x"></i>
+                            </div>
+                            <h5 class="card-title">فوري وسريع</h5>
+                            <p class="card-text">رسائل فورية بدون تأخير مع تقنية WebSocket</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="text-primary mb-3">
+                                <i class="fas fa-users fa-3x"></i>
+                            </div>
+                            <h5 class="card-title">مجتمعات متنوعة</h5>
+                            <p class="card-text">انضم إلى غرف دردشة أو أنشئ مجتمعك الخاص</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- أزرار الدعوة للإجراء -->
+            <div class="mb-5">
+                <h3 class="mb-4">انضم إلى مجتمعنا اليوم</h3>
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-5 me-md-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>تسجيل الدخول
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-5">
+                        <i class="fas fa-user-plus me-2"></i>إنشاء حساب
+                    </a>
+                </div>
+            </div>
+
+            <!-- إحصاءات (يمكن جعلها ديناميكية لاحقاً) -->
+            <div class="row text-center">
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="h2 fw-bold text-primary">+500</div>
+                    <div class="text-muted">مستخدم نشط</div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="h2 fw-bold text-primary">+1K</div>
+                    <div class="text-muted">رسالة يومياً</div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="h2 fw-bold text-primary">+50</div>
+                    <div class="text-muted">غرفة دردشة</div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="h2 fw-bold text-primary">99.9%</div>
+                    <div class="text-muted">وقت تشغيل</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- قسم testimonials -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h3 class="mb-5">ما يقوله مستخدمونا</h3>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="text-warning mb-3">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <p class="card-text">"أفضل تطبيق دردشة استخدمته! سري وآمن وسهل الاستخدام."</p>
+                                <div class="text-muted">- أحمد</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="text-warning mb-3">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <p class="card-text">"التشفير يعطيني راحة البال وأنا أتحدث مع أصدقائي."</p>
+                                <div class="text-muted">- سارة</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
