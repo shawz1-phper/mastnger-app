@@ -1,9 +1,9 @@
 import os
 import multiprocessing
 
-bind = "0.0.0.0:{}".format(os.environ.get('PORT', 10000))
+bind = "0.0.0.0:{}".format(os.environ.get('PORT', 5000))
 workers = 1
-worker_class = "gthread"
+worker_class = "eventlet"
 timeout = 120
 keepalive = 5
 loglevel = "info"

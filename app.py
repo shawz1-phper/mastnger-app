@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 import json
 import os
 import base64
@@ -13,15 +14,27 @@ import secrets
 from functools import wraps
 from dotenv import load_dotenv
 import logging
-
+# أضف في الأعلى للتحقق
+try:
+    import eventlet
+    print("✅ eventlet imported successfully")
+    print(f"✅ eventlet version: {eventlet.__version__}")
+except ImportError as e:
+    print(f"❌ eventlet import failed: {e}")
 # تحميل متغيرات البيئة
 load_dotenv()
 
 # تهيئة التطبيق
 app = Flask(__name__)
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['REMEMBER_COOKIE_SECURE'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-'+secrets.token_hex(16))
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-app.config['SOCKETIO_ASYNC_MODE'] = 'threading'  # الخيار الأفضل
+app.config['SOCKETIO_ASYNC_MODE'] = 'eventlet'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 # إضافة فلاتر Jinja2 المخصصة
 @app.template_filter('time_ago')
 def time_ago_filter(datetime_str):
@@ -52,7 +65,11 @@ def time_ago_filter(datetime_str):
     except:
         return "غير معروف"
 # تهيئة SocketIO
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode=app.config['SOCKETIO_ASYNC_MODE'])
+socketio = SocketIO(app, 
+                  cors_allowed_origins="*",
+                  async_mode=app.config['SOCKETIO_ASYNC_MODE'],  # ✅ eventlet هنا
+                   engineio_logger=True,
+                   logger=True)
 CORS(app)
 
 # إعداد Flask-Login
@@ -164,6 +181,14 @@ def save_rooms(rooms):
     create_backup('rooms.json')
     return save_json_data('rooms.json', rooms)
 
+# أضف هذا في app.py للتحقق
+@app.before_request
+def check_eventlet():
+    import sys
+    if 'eventlet' in sys.modules:
+        print('✅ eventlet is active and working!')
+    else:
+        print('❌ eventlet is not active')
 # إدارة تحميل المستخدم
 @login_manager.user_loader
 def load_user(user_id):
@@ -594,6 +619,6 @@ if __name__ == '__main__':
     
     # تحديد المنفذ بناءً على البيئة
     port = int(os.environ.get('PORT', 5000))
-    
-    # تشغيل التطبيق
-    socketio.run(app, host='0.0.0.0', port=port, debug=os.environ.get('DEBUG', 'False').lower() == 'true')
+    host = os.environ.get('HOST', '0.0.0.0')
+    print(f"🚀 Starting server with eventlet on {host}:{port}")
+    socketio.run(app, host=host, port=port, debug=False)
