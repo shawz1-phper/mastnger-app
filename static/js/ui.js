@@ -1,347 +1,232 @@
-// ui.js - إدارة واجهة المستخدم وتفاعلاتها
-
-document.addEventListener('DOMContentLoaded', function() {
-    // إدارة السمات
-    initTheme();
-    
-    // إدارة القوائم المنسدلة
-    initDropdowns();
-    
-    // إدارة النماذج
-    initForms();
-    
-    // إدارة التنقل
-    initNavigation();
-    
-    // إدارة التحميل
-    initLoadingStates();
-    
-    // إدارة الإشعارات
-    initNotifications();
-});
-
-// تهيئة نظام السمات
-function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(savedTheme);
-    
-    // إضافة مستمعي الأحداث لأزرار تغيير السمة
-    document.querySelectorAll('[data-theme]').forEach(button => {
-        button.addEventListener('click', function() {
-            const theme = this.getAttribute('data-theme');
-            applyTheme(theme);
-            saveTheme(theme);
-        });
-    });
-}
-
-// تطبيق السمة المحددة
-function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-    
-    // تحديث الأزرار النشطة
-    document.querySelectorAll('[data-theme]').forEach(button => {
-        if (button.getAttribute('data-theme') === theme) {
-            button.classList.add('active');
-        } else {
-            button.classList.remove('active');
-        }
-    });
-}
-
-// حفظ السمة في الخادم (إذا كان المستخدم مسجلاً)
-function saveTheme(theme) {
-    if (typeof currentUserId !== 'undefined' && currentUserId) {
-        fetch('/api/save-theme', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ theme: theme })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                console.error('Failed to save theme:', data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error saving theme:', error);
-        });
+// ui.js - مكتبة مساعدة لواجهة المستخدم
+class UIManager {
+    constructor() {
+        this.notificationTimeout = null;
+        this.currentTheme = localStorage.getItem('theme') || 'light';
+        this.init();
     }
-}
 
-// تهيئة القوائم المنسدلة
-function initDropdowns() {
-    // إغلاق القوائم المنسدلة عند النقر خارجها
-    document.addEventListener('click', function(event) {
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            if (!menu.parentElement.contains(event.target)) {
-                menu.classList.remove('show');
-            }
-        });
-    });
-}
+    init() {
+        this.applyTheme(this.currentTheme);
+        this.setupEventListeners();
+        console.log('🎨 UI Manager initialized');
+    }
 
-// تهيئة النماذج
-function initForms() {
-    // إضافة تحقق من الصحة للنماذج
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const requiredFields = this.querySelectorAll('[required]');
-            let valid = true;
-            
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    valid = false;
-                    highlightField(field, false);
-                } else {
-                    highlightField(field, true);
-                }
-            });
-            
-            if (!valid) {
-                e.preventDefault();
-                showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
-            }
-        });
-    });
+    // ==================== الإشعارات والتنبيهات ====================
     
-    // إضافة تأثيرات للحقول
-    document.querySelectorAll('.form-control').forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
+    showNotification(message, type = 'info', duration = 5000) {
+        // إخفاء أي إشعار سابق
+        this.hideNotification();
+        
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas ${this.getNotificationIcon(type)} me-2"></i>
+                <span>${message}</span>
+                <button class="btn-close btn-close-white ms-auto" onclick="uiManager.hideNotification()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // إخفاء تلقائي بعد المدة المحددة
+        this.notificationTimeout = setTimeout(() => {
+            this.hideNotification();
+        }, duration);
+        
+        return notification;
+    }
+
+    hideNotification() {
+        const notification = document.querySelector('.notification');
+        if (notification) {
+            notification.remove();
+        }
+        if (this.notificationTimeout) {
+            clearTimeout(this.notificationTimeout);
+        }
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            'success': 'fa-check-circle',
+            'error': 'fa-exclamation-circle',
+            'warning': 'fa-exclamation-triangle',
+            'info': 'fa-info-circle'
+        };
+        return icons[type] || 'fa-info-circle';
+    }
+
+    // ==================== إدارة السمات ====================
+    
+    applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        this.currentTheme = theme;
+        
+        // تحديث الأزرار النشطة
+        document.querySelectorAll('[data-theme]').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
         });
         
-        input.addEventListener('blur', function() {
-            if (!this.value) {
-                this.parentElement.classList.remove('focused');
-            }
-        });
-    });
-}
-
-// إبراز الحقول عند التحقق
-function highlightField(field, isValid) {
-    if (isValid) {
-        field.classList.add('is-valid');
-        field.classList.remove('is-invalid');
-    } else {
-        field.classList.add('is-invalid');
-        field.classList.remove('is-valid');
+        this.showNotification(`تم التغيير إلى السمة ${theme === 'light' ? 'الفاتحة' : 'المظلمة'}`, 'success', 2000);
     }
-}
 
-// تهيئة نظام التنقل
-function initNavigation() {
-    // إضافة تأثيرات للروابط
-    document.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            // إضافة تأثير تحميل للروابط الداخلية
-            if (this.href && this.href.startsWith(window.location.origin)) {
-                e.preventDefault();
-                showLoading();
-                
-                setTimeout(() => {
-                    window.location.href = this.href;
-                }, 300);
-            }
-        });
-    });
+    toggleTheme() {
+        const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+        this.applyTheme(newTheme);
+    }
+
+    // ==================== إدارة التحميل ====================
     
-    // إضافة تأثيرات لأزرار العودة
-    document.querySelectorAll('.btn-back').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.history.back();
-        });
-    });
-}
-
-// تهيئة حالات التحميل
-function initLoadingStates() {
-    // إضافة مستمع للأزرار التي تسبب تحميل
-    document.querySelectorAll('.btn-loading').forEach(button => {
-        button.addEventListener('click', function() {
-            this.setAttribute('data-original-text', this.innerHTML);
-            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري التحميل...';
-            this.disabled = true;
-        });
-    });
-}
-
-// إظهار حالة التحميل
-function showLoading() {
-    const loader = document.createElement('div');
-    loader.className = 'page-loader';
-    loader.innerHTML = `
-        <div class="loader-overlay"></div>
-        <div class="loader-content">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">جاري التحميل...</span>
+    showLoader(text = 'جاري التحميل...') {
+        this.hideLoader();
+        
+        const loader = document.createElement('div');
+        loader.className = 'loading-overlay';
+        loader.innerHTML = `
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p>${text}</p>
             </div>
-            <p>جاري التحميل...</p>
-        </div>
-    `;
-    document.body.appendChild(loader);
-}
-
-// إخفاء حالة التحميل
-function hideLoading() {
-    const loader = document.querySelector('.page-loader');
-    if (loader) {
-        loader.remove();
+        `;
+        
+        document.body.appendChild(loader);
+        document.body.style.overflow = 'hidden';
     }
-}
 
-// تهيئة نظام الإشعارات
-function initNotifications() {
-    // إضافة مستمع لإغلاق الإشعارات
-    document.querySelectorAll('.alert .btn-close').forEach(button => {
-        button.addEventListener('click', function() {
-            this.closest('.alert').remove();
-        });
-    });
+    hideLoader() {
+        const loader = document.querySelector('.loading-overlay');
+        if (loader) {
+            loader.remove();
+        }
+        document.body.style.overflow = '';
+    }
+
+    // ==================== إدارة النماذج ====================
     
-    // إغلاق تلقائي للإشعارات بعد 5 ثوان
-    document.querySelectorAll('.alert:not(.alert-permanent)').forEach(alert => {
-        setTimeout(() => {
-            if (alert.parentNode) {
-                alert.remove();
+    validateForm(form) {
+        let isValid = true;
+        const inputs = form.querySelectorAll('[required]');
+        
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                this.highlightField(input, false);
+                isValid = false;
+            } else {
+                this.highlightField(input, true);
             }
-        }, 5000);
-    });
-}
+        });
+        
+        return isValid;
+    }
 
-// إظهار إشعار
-function showNotification(message, type = 'info') {
-    const alertsContainer = document.getElementById('alerts-container') || createAlertsContainer();
-    
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show`;
-    alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    alertsContainer.appendChild(alert);
-    
-    // إغلاق تلقائي بعد 5 ثوان
-    setTimeout(() => {
-        if (alert.parentNode) {
-            alert.remove();
+    highlightField(field, isValid) {
+        field.classList.remove('is-valid', 'is-invalid');
+        field.classList.add(isValid ? 'is-valid' : 'is-invalid');
+        
+        // إظهار رسالة الخطأ إذا لزم الأمر
+        if (!isValid) {
+            this.showTooltip(field, 'هذا الحقل مطلوب');
         }
-    }, 5000);
-}
+    }
 
-// إنشاء حاوية للإشعارات إذا لم تكن موجودة
-function createAlertsContainer() {
-    const container = document.createElement('div');
-    container.id = 'alerts-container';
-    container.className = 'position-fixed top-0 end-0 p-3';
-    container.style.zIndex = '9999';
-    document.body.appendChild(container);
-    return container;
-}
+    resetForm(form) {
+        form.reset();
+        form.querySelectorAll('.is-valid, .is-invalid').forEach(field => {
+            field.classList.remove('is-valid', 'is-invalid');
+        });
+    }
 
-// نسخ النص إلى الحافظة
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('تم نسخ النص إلى الحافظة', 'success');
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-        showNotification('فشل نسخ النص', 'error');
-    });
-}
+    // ==================== الأدوات المساعدة ====================
+    
+    showTooltip(element, message) {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'custom-tooltip';
+        tooltip.textContent = message;
+        
+        const rect = element.getBoundingClientRect();
+        tooltip.style.top = `${rect.bottom + 5}px`;
+        tooltip.style.left = `${rect.left}px`;
+        
+        document.body.appendChild(tooltip);
+        
+        setTimeout(() => {
+            tooltip.remove();
+        }, 3000);
+    }
 
-// التمرير إلى عنصر معين
-function scrollToElement(elementId, offset = 20) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
+    copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            this.showNotification('تم نسخ النص إلى الحافظة', 'success');
+        }).catch(err => {
+            this.showNotification('فشل نسخ النص', 'error');
+        });
+    }
 
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return 'الآن';
+        if (diff < 3600000) return `منذ ${Math.floor(diff / 60000)} دقيقة`;
+        if (diff < 86400000) return `منذ ${Math.floor(diff / 3600000)} ساعة`;
+        if (diff < 604800000) return `منذ ${Math.floor(diff / 86400000)} يوم`;
+        
+        return date.toLocaleDateString('ar-EG');
+    }
+
+    // ==================== إدارة العناصر ====================
+    
+    toggleElement(elementId, show) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.style.display = show ? 'block' : 'none';
+        }
+    }
+
+    scrollToElement(elementId, offset = 20) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - offset;
+            
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // ==================== event listeners ====================
+    
+    setupEventListeners() {
+        // theme toggle
+        document.querySelectorAll('[data-theme]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const theme = btn.getAttribute('data-theme');
+                this.applyTheme(theme);
+            });
+        });
+        
+        // tooltips
+        document.querySelectorAll('[data-tooltip]').forEach(el => {
+            el.addEventListener('mouseenter', (e) => {
+                this.showTooltip(e.target, e.target.getAttribute('data-tooltip'));
+            });
         });
     }
 }
 
-// إدارة حالة الاتصال
-function updateConnectionStatus(isOnline) {
-    const statusElement = document.getElementById('connection-status') || createConnectionStatusElement();
-    
-    if (isOnline) {
-        statusElement.className = 'connection-status online';
-        statusElement.innerHTML = '<i class="fas fa-wifi"></i> متصل';
-    } else {
-        statusElement.className = 'connection-status offline';
-        statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
-    }
-}
+// إنشاء instance global
+window.uiManager = new UIManager();
 
-// إنشاء عنصر حالة الاتصال إذا لم يكن موجوداً
-function createConnectionStatusElement() {
-    const statusElement = document.createElement('div');
-    statusElement.id = 'connection-status';
-    statusElement.className = 'connection-status';
-    document.body.appendChild(statusElement);
-    return statusElement;
-}
-
-// التحقق من حالة الاتصال
-function checkConnection() {
-    const isOnline = navigator.onLine;
-    updateConnectionStatus(isOnline);
-    
-    // إضافة مستمعين لتغير حالة الاتصال
-    window.addEventListener('online', () => updateConnectionStatus(true));
-    window.addEventListener('offline', () => updateConnectionStatus(false));
-}
-
-// تهيئة كل شيء عند تحميل الصفحة
-window.addEventListener('load', function() {
-    // إخفاء حالة التحميل إذا كانت معروضة
-    hideLoading();
-    
-    // التحقق من حالة الاتصال
-    checkConnection();
-    
-    // إضافة تأثيرات للصور
-    initImages();
-    
-    // إضافة تأثيرات للبطاقات
-    initCards();
-});
-
-// تهيئة تأثيرات الصور
-function initImages() {
-    document.querySelectorAll('img').forEach(img => {
-        // إضافة تأثير تحميل للصور
-        if (!img.complete) {
-            img.classList.add('loading');
-            img.addEventListener('load', function() {
-                this.classList.remove('loading');
-                this.classList.add('loaded');
-            });
-            img.addEventListener('error', function() {
-                this.classList.remove('loading');
-                this.classList.add('error');
-            });
-        }
-    });
-}
-
-// تهيئة تأثيرات البطاقات
-function initCards() {
-    document.querySelectorAll('.card-hover').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.classList.add('hover');
-        });
-        card.addEventListener('mouseleave', function() {
-            this.classList.remove('hover');
-        });
-    });
-}
+// دوال مساعدة global للاستخدام السريع
+window.showNotification = (message, type, duration) => uiManager.showNotification(message, type, duration);
+window.hideNotification = () => uiManager.hideNotification();
+window.showLoader = (text) => uiManager.showLoader(text);
+window.hideLoader = () => uiManager.hideLoader();
+window.toggleTheme = () => uiManager.toggleTheme();

@@ -19,7 +19,53 @@ document.addEventListener('DOMContentLoaded', function() {
         initSearchFilters(searchFilters);
     }
 });
+// static/js/search.js
+let searchTimeout;
 
+document.getElementById('search-input').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    
+    if (query.length > 2) {
+        searchTimeout = setTimeout(() => {
+            searchUsers(query);
+        }, 500);
+    } else {
+        clearSearchResults();
+    }
+});
+
+async function searchUsers(query) {
+    try {
+        const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
+        const searchResults = await response.json();
+        
+        displaySearchResults(searchResults);
+    } catch (error) {
+        console.error('Search error:', error);
+        showNotification('حدث خطأ أثناء البحث', 'error');
+    }
+}
+
+function displaySearchResults(users) {
+    const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = '';
+    
+    users.forEach(user => {
+        const userElement = document.createElement('div');
+        userElement.className = 'search-result';
+        userElement.innerHTML = `
+            <img src="/static/img/avatars/${user.avatar_url}" 
+                 alt="${user.username}" class="user-avatar">
+            <div>
+                <strong>${user.username}</strong>
+                <small>${user.is_online ? 'متصل الآن' : 'غير متصل'}</small>
+            </div>
+            <button onclick="startChatWith(${user.id})">محادثة</button>
+        `;
+        resultsContainer.appendChild(userElement);
+    });
+}
 // تهيئة نموذج البحث
 function initSearchForm(form) {
     form.addEventListener('submit', function(e) {

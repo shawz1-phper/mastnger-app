@@ -143,3 +143,37 @@ document.addEventListener('DOMContentLoaded', function() {
         socket.emit('user_activity');
     }, 30000);
 });
+// static/js/chat.js
+document.getElementById('message-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const messageInput = document.getElementById('message-input');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    try {
+        // إرسال الرسالة إلى الخادم
+        const response = await fetch('/api/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                room_id: currentRoomId,
+                content: message,
+                message_type: 'text'
+            })
+        });
+        
+        if (response.ok) {
+            messageInput.value = '';
+            // الرسالة ستضاف تلقائياً via Socket.io
+        } else {
+            throw new Error('Failed to send message');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showNotification('فشل إرسال الرسالة', 'error');
+    }
+});
