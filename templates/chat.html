@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}دردشة{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-container {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+.message {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    max-width: 70%;
+}
+.message-incoming {
+    background: #f8f9fa;
+    align-self: flex-start;
+}
+.message-outgoing {
+    background: #007bff;
+    color: white;
+    align-self: flex-end;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">غرف الدردشة</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush" id="chat-rooms-list">
+                    <!-- الغرف ستظهر هنا -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">الأصدقاء المتصلون</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush" id="chat-online-users">
+                    <!-- المتصلون ستظهر هنا -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-9">
+        <div class="card chat-container">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 id="current-chat-title">اختر محادثة</h5>
+                    <small id="current-chat-status" class="text-muted"></small>
+                </div>
+                <div id="chat-actions" class="d-none">
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages-container">
+                <div class="text-center text-muted py-5" id="no-chat-selected">
+                    <i class="fas fa-comments fa-2x mb-3"></i>
+                    <p>اختر غرفة أو محادثة للبدء</p>
+                </div>
+            </div>
+
+            <div class="card-footer" id="chat-input-container" style="display: none;">
+                <form id="chat-message-form" class="d-flex">
+                    <input type="text" id="chat-message-input" class="form-control me-2" 
+                           placeholder="اكتب رسالتك هنا..." required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+                <div id="chat-typing-indicator" class="text-muted small mt-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal البحث -->
+<div class="modal fade" id="searchModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">بحث</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" id="search-modal-input" class="form-control" 
+                           placeholder="ابحث عن مستخدمين أو غرف...">
+                    <button class="btn btn-primary" onclick="performSearch()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div id="search-results-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script src="{{ url_for('static', filename='js/online-users.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}بحث{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-search me-2"></i>بحث</h4>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-4">
+                    <input type="text" id="main-search-input" class="form-control form-control-lg" 
+                           placeholder="ابحث عن مستخدمين، غرف، أو رسائل..." value="{{ query }}">
+                    <button class="btn btn-primary" onclick="performMainSearch()">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                </div>
+
+                <div class="search-filters mb-4">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="filter-users" checked>
+                        <label class="form-check-label" for="filter-users">المستخدمون</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="filter-rooms" checked>
+                        <label class="form-check-label" for="filter-rooms">الغرف</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="filter-messages" checked>
+                        <label class="form-check-label" for="filter-messages">الرسائل</label>
+                    </div>
+                </div>
+
+                <div id="search-results">
+                    <div class="text-center text-muted py-5" id="no-results">
+                        <i class="fas fa-search fa-3x mb-3"></i>
+                        <h5>ابدأ بالبحث عن مستخدمين، غرف، أو رسائل</h5>
+                        <p>استخدم شريط البحث أعلاه للبدء</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+<script>
+// تحميل نتائج البحث إذا كان هناك query
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('q');
+    if (query && query.length > 2) {
+        document.getElementById('main-search-input').value = query;
+        performMainSearch();
+    }
+});
+</script>
+{% endblock %}
