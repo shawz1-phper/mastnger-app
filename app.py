@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 import json
 import os
 import base64
@@ -14,27 +13,54 @@ import secrets
 from functools import wraps
 from dotenv import load_dotenv
 import logging
-# أضف في الأعلى للتحقق
-try:
-    import eventlet
-    print("✅ eventlet imported successfully")
-    print(f"✅ eventlet version: {eventlet.__version__}")
-except ImportError as e:
-    print(f"❌ eventlet import failed: {e}")
+from supabase_client import supabase
+from models import db, User, Room, UserRoom, Message
+# app.py - في الأعلى مع الاستيرادات
+from database import (
+    get_user_by_id, get_user_by_email, get_user_by_username,
+    update_user_online_status, get_active_users, search_users,
+    create_user_with_validation, get_room_by_id, get_room_by_name,
+    create_room, get_user_rooms, add_user_to_room, remove_user_from_room,
+    get_room_members, save_message, get_room_messages, get_private_messages,
+    get_recent_messages, get_unread_count, update_last_read,
+    notify_new_message, subscribe_to_room
+)
+from utils import generate_password, is_valid_email, is_valid_username, format_timestamp
+
+# ثم استخدم الدوال في routes كما في الأمثلة السابقة
+
 # تحميل متغيرات البيئة
 load_dotenv()
 
 # تهيئة التطبيق
 app = Flask(__name__)
-app.config['PREFERRED_URL_SCHEME'] = 'https'
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['REMEMBER_COOKIE_SECURE'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-'+secrets.token_hex(16))
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-app.config['SOCKETIO_ASYNC_MODE'] = 'eventlet'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+app.config['SOCKETIO_ASYNC_MODE'] = 'threading'  # الخيار الأفضل
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SUPABASE_DB_URL').replace('postgres://', 'postgresql://')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db.init_app(app)
+# تهيئة SocketIO
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode=app.config['SOCKETIO_ASYNC_MODE'])
+CORS(app)
+
+# إعداد Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'يجب تسجيل الدخول للوصول إلى هذه الصفحة'
+# إعداد التشفير
+def generate_encryption_key():
+    key = os.environ.get('ENCRYPTION_KEY')
+    if not key:
+        key = Fernet.generate_key().decode()
+        os.environ['ENCRYPTION_KEY'] = key
+    return key
+
+encryption_key = generate_encryption_key()
+cipher_suite = Fernet(encryption_key.encode())
+
+
 # إضافة فلاتر Jinja2 المخصصة
 @app.template_filter('time_ago')
 def time_ago_filter(datetime_str):
@@ -64,30 +90,32 @@ def time_ago_filter(datetime_str):
             return "الآن"
     except:
         return "غير معروف"
-# تهيئة SocketIO
-socketio = SocketIO(app, 
-                  cors_allowed_origins="*",
-                  async_mode=app.config['SOCKETIO_ASYNC_MODE'],  # ✅ eventlet هنا
-                   engineio_logger=True,
-                   logger=True)
-CORS(app)
 
-# إعداد Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-login_manager.login_message = 'يجب تسجيل الدخول للوصول إلى هذه الصفحة'
 
-# إعداد التشفير
-def generate_encryption_key():
-    key = os.environ.get('ENCRYPTION_KEY')
-    if not key:
-        key = Fernet.generate_key().decode()
-        os.environ['ENCRYPTION_KEY'] = key
-    return key
+# app.py - إعداد ذكي للاتصال بقاعدة البيانات
+def setup_database():
+    """إعداد اتصال قاعدة البيانات الذكي"""
+    
+    # إذا كان هناك Supabase config، استخدمه
+    if os.environ.get('SUPABASE_URL') and os.environ.get('SUPABASE_KEY'):
+        print("🚀 Using Supabase PostgreSQL database")
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+        
+        # تعطيل إنشاء الجداول التلقائي لـ SQLite
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        
+    else:
+        print("💻 Using local SQLite database for development")
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+        
+        # تهيئة SQLite المحلي
+        init_database()
 
-encryption_key = generate_encryption_key()
-cipher_suite = Fernet(encryption_key.encode())
+# استدعاء الإعداد الذكي
+setup_database()
+# بعد تعريف app
+
+
 
 # نموذج المستخدم
 class User(UserMixin):
@@ -159,21 +187,49 @@ def decrypt_message(encrypted_message):
         logging.error(f"Decryption error: {e}")
         return encrypted_message
 
-# تحميل بيانات المستخدمين
-def load_users():
-    return load_json_data('users.json', {})
 
-def save_users(users):
-    create_backup('users.json')
-    return save_json_data('users.json', users)
+# استبدال دوال التحميل والحفظ
+def load_users():
+    try:
+        response = supabase.get_client().table('users').select('*').execute()
+        return {str(user['id']): user for user in response.data}
+    except Exception as e:
+        print(f"Error loading users: {e}")
+        return {}
+
+def save_users(users_dict):
+    try:
+        # Convert dict to list
+        users_list = list(users_dict.values())
+        response = supabase.get_client().table('users').upsert(users_list).execute()
+        return True
+    except Exception as e:
+        print(f"Error saving users: {e}")
+        return False
 
 def load_messages():
-    return load_json_data('messages.json', {"rooms": {}, "private": {}})
+    try:
+        response = supabase.get_client().table('messages').select('*').execute()
+        return {"rooms": {}, "private": {}}  # سنعدل هذا لاحقاً
+    except Exception as e:
+        print(f"Error loading messages: {e}")
+        return {"rooms": {}, "private": {}}
 
-def save_messages(messages):
-    create_backup('messages.json')
-    return save_json_data('messages.json', messages)
-
+def save_message(message_data):
+    try:
+        response = supabase.get_client().table('messages').insert({
+            'room_name': message_data.get('room'),
+            'user_id': message_data.get('user_id'),
+            'username': message_data.get('username'),
+            'content': message_data.get('message'),
+            'timestamp': datetime.now().isoformat(),
+            'is_private': message_data.get('is_private', False),
+            'recipient_id': message_data.get('recipient_id')
+        }).execute()
+        return True
+    except Exception as e:
+        print(f"Error saving message: {e}")
+        return False
 def load_rooms():
     return load_json_data('rooms.json', {})
 
@@ -181,14 +237,20 @@ def save_rooms(rooms):
     create_backup('rooms.json')
     return save_json_data('rooms.json', rooms)
 
-# أضف هذا في app.py للتحقق
+@socketio.on('connect')
+def handle_connect():
+    print('✅ Client connected!')
+    emit('connected', {'status': 'connected'})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('❌ Client disconnected')
+# في app.py أضف
 @app.before_request
-def check_eventlet():
-    import sys
-    if 'eventlet' in sys.modules:
-        print('✅ eventlet is active and working!')
-    else:
-        print('❌ eventlet is not active')
+def check_memory():
+    import psutil
+    memory = psutil.virtual_memory()
+    print(f'🧠 Memory usage: {memory.percent}%')
 # إدارة تحميل المستخدم
 @login_manager.user_loader
 def load_user(user_id):
@@ -254,6 +316,7 @@ def register():
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
+        # تحميل المستخدمين الحاليين من Supabase
         users = load_users()
         username = request.form.get('username')
         email = request.form.get('email')
@@ -267,29 +330,58 @@ def register():
             return render_template('register.html', error='كلمة المرور يجب أن تكون على الأقل 6 أحرف')
         
         # التحقق من عدم وجود مستخدم بنفس البريد أو اسم المستخدم
-        for user_data in users.values():
+        for user_id, user_data in users.items():
             if user_data['email'] == email:
                 return render_template('register.html', error='البريد الإلكتروني مسجل مسبقاً')
             if user_data['username'] == username:
                 return render_template('register.html', error='اسم المستخدم مسجل مسبقاً')
         
-        # إنشاء مستخدم جديد
-        user_id = str(len(users) + 1)
-        users[user_id] = {
-            'username': username,
-            'email': email,
-            'password': generate_password_hash(password),
-            'avatar': 'default.png',
-            'theme': 'light',
-            'joined_at': datetime.now().isoformat(),
-            'last_seen': datetime.now().isoformat()
-        }
-        
-        if save_users(users):
-            user = User(user_id, username, email, users[user_id]['password'])
-            login_user(user)
-            return redirect(url_for('dashboard'))
-        else:
+        # إنشاء مستخدم جديد في Supabase
+        try:
+            # إدخال المستخدم الجديد مباشرة في Supabase
+            response = supabase.get_client().table('users').insert({
+                'username': username,
+                'email': email,
+                'password': generate_password_hash(password),
+                'avatar': 'default.png',
+                'theme': 'light',
+                'joined_at': datetime.now().isoformat(),
+                'last_seen': datetime.now().isoformat()
+            }).execute()
+            
+            if response.data:
+                # الحصول على ID الذي أنشأه Supabase تلقائياً
+                new_user_id = str(response.data[0]['id'])
+                
+                # إنشاء كائن User وتسجيل الدخول
+                user = User(
+                    id=new_user_id,
+                    username=username,
+                    email=email,
+                    password=generate_password_hash(password),
+                    avatar='default.png',
+                    theme='light'
+                )
+                
+                login_user(user)
+                
+                # تحديث بيانات المستخدم المحلية
+                users[new_user_id] = {
+                    'username': username,
+                    'email': email,
+                    'password': generate_password_hash(password),
+                    'avatar': 'default.png',
+                    'theme': 'light',
+                    'joined_at': datetime.now().isoformat(),
+                    'last_seen': datetime.now().isoformat()
+                }
+                
+                return redirect(url_for('dashboard'))
+            else:
+                return render_template('register.html', error='حدث خطأ أثناء إنشاء الحساب في قاعدة البيانات')
+                
+        except Exception as e:
+            print(f"Error creating user: {e}")
             return render_template('register.html', error='حدث خطأ أثناء إنشاء الحساب')
     
     return render_template('register.html')
@@ -455,9 +547,12 @@ def profile():
         if avatar:
             filename = f"user_{current_user.id}_{int(datetime.now().timestamp())}.png"
             avatar_path = os.path.join(app.root_path, 'static', 'img', 'avatars', filename)
-            avatar.save(avatar_path)
-            users[current_user.id]['avatar'] = filename
-        
+            try:
+                avatar.save(avatar_path)
+                users[current_user.id]['avatar'] = filename
+            except Exception as e:
+                logging.error(f"Error saving avatar: {e}")
+                return render_template('profile.html', error='حدث خطأ أثناء حفظ الصورة')
         if save_users(users):
             return redirect(url_for('profile', success=True))
         else:
@@ -502,17 +597,109 @@ def logout():
 def serve_avatar(filename):
     return send_from_directory(os.path.join(app.root_path, 'static', 'img', 'avatars'), filename)
 
+@app.route('/api/rooms', methods=['GET'])
+@login_required
+def get_rooms():
+    user_rooms = get_user_rooms(current_user.id)
+    return jsonify([{
+        'id': room.id,
+        'name': room.name,
+        'description': room.description,
+        'unread_count': get_unread_count(room.id, current_user.id)
+    } for room in user_rooms])
+
+@app.route('/api/rooms', methods=['POST'])
+@login_required
+def create_new_room():
+    data = request.get_json()
+    room = create_room(
+        name=data['name'],
+        description=data.get('description', ''),
+        created_by=current_user.id,
+        is_public=data.get('is_public', True)
+    )
+    add_user_to_room(current_user.id, room.id)
+    return jsonify({'id': room.id, 'name': room.name})
+
+@app.route('/api/messages/<int:room_id>', methods=['GET'])
+@login_required
+def get_messages(room_id):
+    messages = get_room_messages(room_id)
+    return jsonify([{
+        'id': msg.id,
+        'user_id': msg.user_id,
+        'username': msg.username,
+        'content': msg.content,
+        'timestamp': msg.timestamp.isoformat(),
+        'message_type': msg.message_type
+    } for msg in messages])
+
+@app.route('/api/messages', methods=['POST'])
+@login_required
+def send_message():
+    data = request.get_json()
+    message = save_message(
+        room_id=data['room_id'],
+        user_id=current_user.id,
+        username=current_user.username,
+        content=data['content'],
+        message_type=data.get('message_type', 'text'),
+        is_private=data.get('is_private', False),
+        recipient_id=data.get('recipient_id')
+    )
+    return jsonify({'id': message.id, 'timestamp': message.timestamp.isoformat()})
+
+# في routes نستخدم النماذج مباشرة
+@app.route('/api/users/<int:user_id>')
+@login_required
+def get_user_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'avatar_url': user.avatar_url,
+        'is_online': user.is_online,
+        'last_seen': user.last_seen.isoformat()
+    })
+
+@app.route('/api/rooms/<int:room_id>/messages')
+@login_required
+def get_room_messages_route(room_id):
+    messages = Message.query.filter_by(room_id=room_id)\
+        .order_by(Message.timestamp.desc())\
+        .limit(100)\
+        .all()
+    
+    return jsonify([{
+        'id': msg.id,
+        'user_id': msg.user_id,
+        'username': msg.username,
+        'content': msg.content,
+        'timestamp': msg.timestamp.isoformat(),
+        'message_type': msg.message_type
+    } for msg in messages])
 # أحداث SocketIO
 @socketio.on('connect')
 def handle_connect():
     if current_user.is_authenticated:
         emit('status', {'msg': f'{current_user.username} متصل الآن', 'username': 'System'})
 
+@socketio.on('join_room')
+def handle_join_room(data):
+    room_id = data['room_id']
+    join_room(f'room_{room_id}')
+    update_user_online_status(current_user.id, True)
+
+@socketio.on('leave_room')
+def handle_leave_room(data):
+    room_id = data['room_id']
+    leave_room(f'room_{room_id}')
+    update_user_online_status(current_user.id, False)
+
 @socketio.on('disconnect')
 def handle_disconnect():
     if current_user.is_authenticated:
-        emit('status', {'msg': f'{current_user.username} غير متصل الآن', 'username': 'System'})
-
+        update_user_online_status(current_user.id, False)
 @socketio.on('join')
 @login_required_socket
 def handle_join(data):
@@ -619,6 +806,6 @@ if __name__ == '__main__':
     
     # تحديد المنفذ بناءً على البيئة
     port = int(os.environ.get('PORT', 5000))
-    host = os.environ.get('HOST', '0.0.0.0')
-    print(f"🚀 Starting server with eventlet on {host}:{port}")
-    socketio.run(app, host=host, port=port, debug=False)
+    
+    # تشغيل التطبيق
+    socketio.run(app, host='0.0.0.0', port=port, debug=os.environ.get('DEBUG', 'False').lower() == 'true')
