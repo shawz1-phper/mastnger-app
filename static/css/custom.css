@@ -1,0 +1,264 @@
+/* custom.css - تنسيقات مخصصة إضافية */
+
+/* تخصيص الشريط العلوي */
+.navbar-brand {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+}
+
+/* تخصيص البطاقات */
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    font-family: 'Cairo', sans-serif;
+}
+
+/* تخصيص الأزرار */
+.btn {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+}
+
+/* تخصيص حقول الإدخال */
+.form-control {
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+    font-family: 'Cairo', sans-serif;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
+}
+
+/* تخصيص القوائم */
+.list-group-item {
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-family: 'Cairo', sans-serif;
+}
+
+.list-group-item:last-child {
+    margin-bottom: 0;
+}
+
+/* تخصيص الرسائل */
+.message {
+    border-radius: 18px;
+    margin-bottom: 15px;
+    font-family: 'Cairo', sans-serif;
+}
+
+.message-incoming {
+    border-bottom-right-radius: 5px;
+}
+
+.message-outgoing {
+    border-bottom-left-radius: 5px;
+}
+
+/* تخصيص الصور */
+.user-avatar {
+    border: 3px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-avatar:hover {
+    border-color: var(--primary-color);
+}
+
+/* تخصيص الإشعارات */
+.notification {
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* تخصيص محدد السمات */
+.theme-option {
+    font-family: 'Cairo', sans-serif;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* تخصيص حالة التحميل */
+.loading-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+}
+
+/* تخصيص الرسائل الفارغة */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* تخصيص التوكنات */
+.badge {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    border-radius: 20px;
+}
+
+/* تخصيص الوسوم */
+.tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: var(--light-color);
+    color: var(--text-color);
+    border-radius: 15px;
+    font-size: 0.875rem;
+    margin: 0.25rem;
+    font-family: 'Cairo', sans-serif;
+}
+
+/* تخصيص التوقيت */
+.timestamp {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    font-family: 'Cairo', sans-serif;
+}
+
+/* تخصيص العناوين */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+}
+
+/* تخصيص الروابط */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: var(--secondary-color);
+}
+
+/* تخصيص الأيقونات */
+.icon-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-color);
+    color: var(--text-color);
+    border: none;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* تخصيص الشبكات */
+.grid-container {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* تخصيص التخطيط */
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+/* تخصيص الهوامش */
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.ml-0 { margin-left: 0; }
+.mr-0 { margin-right: 0; }
+
+/* تخصيص الحقول */
+.field-group {
+    margin-bottom: 1.5rem;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    font-family: 'Cairo', sans-serif;
+}
+
+/* تخصيص الاستجابات */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .card {
+        border-radius: 10px;
+    }
+    
+    .message {
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}

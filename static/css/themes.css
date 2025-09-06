@@ -1,4 +1,4 @@
-/* themes.css - أنماط السمات الإضافية */
+/* themes.css - أنظمة الألوان والسمات */
 
 /* سمة فاتحة إضافية */
 .light-theme {
@@ -19,7 +19,7 @@
     --modal-bg: #ffffff;
 }
 
-/* سمة مظلمة إضافية */
+/* سمة مظلمة */
 .dark-theme {
     --primary-color: #4e73df;
     --secondary-color: #6f42c1;
@@ -27,8 +27,8 @@
     --info-color: #36b9cc;
     --warning-color: #f6c23e;
     --danger-color: #e74a3b;
-    --light-color: #5a5c69;
-    --dark-color: #f8f9fc;
+    --light-color: #3b4252;
+    --dark-color: #eceff4;
     --bg-color: #2e3440;
     --text-color: #d8dee9;
     --border-color: #4c566a;
@@ -75,7 +75,6 @@
     --input-border: #B8DBC2;
     --modal-bg: #ffffff;
 }
-
 /* سمة أرجوانية */
 .purple-theme {
     --primary-color: #9B51E0;
@@ -96,17 +95,6 @@
 }
 
 /* تطبيق السمات على العناصر */
-body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-}
-
-.card {
-    background-color: var(--light-color);
-    border-color: var(--border-color);
-    box-shadow: var(--card-shadow);
-}
-
 .form-control {
     background-color: var(--input-bg);
     border-color: var(--input-border);
@@ -123,54 +111,56 @@ body {
 .modal-content {
     background-color: var(--modal-bg);
     color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
 
-.list-group-item {
-    background-color: var(--light-color);
-    border-color: var(--border-color);
-    color: var(--text-color);
-}
-
-/* أزرار السمات في صفحة الإعدادات */
+/* أزرار السمات */
 .theme-selector {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .theme-option {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    padding: 10px 15px;
+    border-radius: 8px;
     cursor: pointer;
     border: 2px solid transparent;
     transition: all 0.3s;
+    font-weight: 600;
 }
 
 .theme-option:hover {
-    transform: scale(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .theme-option.active {
     border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.25);
 }
 
-.theme-light {
+/* ألوان محددة لكل سمة */
+.light-theme .theme-option.light {
     background: linear-gradient(135deg, #f8f9fc 0%, #e3e6f0 100%);
+    color: #5a5c69;
 }
 
-.theme-dark {
+.dark-theme .theme-option.dark {
     background: linear-gradient(135deg, #2e3440 0%, #4c566a 100%);
+    color: #d8dee9;
 }
 
-.theme-blue {
+.blue-theme .theme-option.blue {
     background: linear-gradient(135deg, #2D9CDB 0%, #2F80ED 100%);
+    color: white;
 }
 
-.theme-green {
+.green-theme .theme-option.green {
     background: linear-gradient(135deg, #219653 0%, #6FCF97 100%);
+    color: white;
 }
-
-.theme-purple {
+.purple-theme .theme-option.purple {
     background: linear-gradient(135deg, #9B51E0 0%, #BB6BD9 100%);
 }

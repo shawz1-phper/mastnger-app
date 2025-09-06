@@ -2,23 +2,23 @@
 
 /* تأثيرات الظهور */
 .fade-in {
-    animation: fadeIn 0.5s;
+    animation: fadeIn 0.5s ease-in;
 }
 
 .slide-in-right {
-    animation: slideInRight 0.5s;
+    animation: slideInRight 0.5s ease-out;
 }
 
 .slide-in-left {
-    animation: slideInLeft 0.5s;
+    animation: slideInLeft 0.5s ease-out;
 }
 
 .bounce-in {
-    animation: bounceIn 0.6s;
+    animation: bounceIn 0.6s ease-out;
 }
 
 .zoom-in {
-    animation: zoomIn 0.5s;
+    animation: zoomIn 0.5s ease-out;
 }
 
 /* تأثيرات الرسائل */
@@ -27,8 +27,14 @@
 }
 
 @keyframes messageTyping {
-    0%, 100% { opacity: 0.4; transform: scale(0.95); }
-    50% { opacity: 1; transform: scale(1); }
+    0%, 100% { 
+        opacity: 0.4; 
+        transform: scale(0.95); 
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
 }
 
 /* تأثيرات الأزرار */
@@ -72,13 +78,30 @@
     100% { transform: rotate(360deg); }
 }
 
+.loading-skeleton {
+    background: linear-gradient(90deg, 
+        var(--border-color) 0%, 
+        var(--light-color) 50%, 
+        var(--border-color) 100%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 /* تأثيرات الإشعارات */
-.notification {
+.notification-enter {
     animation: slideInDown 0.5s, fadeOut 0.5s 2.5s forwards;
 }
 
 @keyframes fadeOut {
-    to { opacity: 0; }
+    to { 
+        opacity: 0; 
+        transform: translateY(-20px); 
+    }
 }
 
 /* تأثيرات الدخول والخروج */
@@ -105,35 +128,115 @@
 
 /* تأثيرات الحركة الأساسية */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
 @keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from { 
+        transform: translateX(100%); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateX(0); 
+        opacity: 1; 
+    }
 }
 
 @keyframes slideInLeft {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from { 
+        transform: translateX(-100%); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateX(0); 
+        opacity: 1; 
+    }
 }
 
 @keyframes bounceIn {
-    0% { transform: scale(0.3); opacity: 0; }
-    50% { transform: scale(1.05); }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); opacity: 1; }
+    0% { 
+        transform: scale(0.3); 
+        opacity: 0; 
+    }
+    50% { 
+        transform: scale(1.05); 
+    }
+    70% { 
+        transform: scale(0.9); 
+    }
+    100% { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
 }
 
 @keyframes zoomIn {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from { 
+        transform: scale(0.5); 
+        opacity: 0; 
+    }
+    to { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
 }
 
 @keyframes slideInDown {
-    from { transform: translateY(-100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from { 
+        transform: translateY(-100%); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+}
+
+/* تأثيرات خاصة بالدردشة */
+.chat-bubble {
+    animation: chatBubble 0.3s;
+}
+
+@keyframes chatBubble {
+    0% { 
+        transform: scale(0); 
+        opacity: 0; 
+    }
+    70% { 
+        transform: scale(1.1); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
+}
+
+/* تأثيرات الوهج */
+.glow {
+    animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { 
+        box-shadow: 0 0 5px #fff, 
+                   0 0 10px #fff, 
+                   0 0 15px var(--primary-color), 
+                   0 0 20px var(--primary-color); 
+    }
+    to { 
+        box-shadow: 0 0 10px #fff, 
+                   0 0 20px #fff, 
+                   0 0 30px var(--primary-color), 
+                   0 0 40px var(--primary-color); 
+    }
 }
 
 /* تأثيرات للهواتف */
@@ -148,23 +251,24 @@
     }
 }
 
-/* تأثيرات خاصة بالدردشة */
-.chat-bubble {
-    animation: chatBubble 0.3s;
+/* تأثيرات التمايل */
+.wiggle {
+    animation: wiggle 0.5s;
 }
 
-@keyframes chatBubble {
-    0% { transform: scale(0); }
-    70% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+@keyframes wiggle {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-2deg); }
+    75% { transform: rotate(2deg); }
 }
 
-/* تأثيرات الوهج */
-.glow {
-    animation: glow 1.5s ease-in-out infinite alternate;
+/* تأثيرات الاهتزاز */
+.shake {
+    animation: shake 0.5s;
 }
 
-@keyframes glow {
-    from { box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px var(--primary-color), 0 0 20px var(--primary-color); }
-    to { box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px var(--primary-color), 0 0 40px var(--primary-color); }
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
